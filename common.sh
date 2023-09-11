@@ -13,45 +13,6 @@ StatusCheck() {
   fi
 }
 
-APP_PREREQ() {
-  id roboshop &>>${LOG_FILE}
-  if [ $? -ne 0 ]; then
-    echo "Add RoboShop Application User"
-    useradd roboshop &>>${LOG_FILE}
-    StatusCheck $?
-  fi
-
-  echo "Download ${COMPONENT} Application Code"
-  curl -s -L -o /tmp/${COMPONENT}.zip "https://github.com/roboshop-devops-project/${COMPONENT}/archive/main.zip" &>>${LOG_FILE}
-  StatusCheck $?
-
-  echo "Clean Old App Content"
-  cd /home/roboshop && rm -rf ${COMPONENT} &>>${LOG_FILE}
-  StatusCheck $?
-
-  echo "Extract ${COMPONENT} Application Code"
-  unzip /tmp/${COMPONENT}.zip &>>${LOG_FILE}
-  StatusCheck $?
-
-  mv ${COMPONENT}-main ${COMPONENT} && cd /home/roboshop/${COMPONENT}
-}
-
-SYSTEMD_SETUP() {
-  echo "Update SystemD Service File"
-  sed -i -e 's/REDIS_ENDPOINT/redis.roboshop.internal/' -e 's/MONGO_ENDPOINT/mongodb.roboshop.internal/' -e 's/CATALOGUE_ENDPOINT/catalogue.roboshop.internal/' -e 's/MONGO_DNSNAME/mongodb.roboshop.internal/' -e 's/CARTENDPOINT/cart.roboshop.internal/' -e 's/DBHOST/mysql.roboshop.internal/' -e 's/CARTHOST/cart.roboshop.internal/' -e 's/USERHOST/user.roboshop.internal/' -e  's/AMQPHOST/rabbitmq.roboshop.internal/' /home/roboshop/${COMPONENT}/systemd.service
-  StatusCheck $?
-
-  echo "Setup ${COMPONENT} Service"
-  mv /home/roboshop/${COMPONENT}/systemd.service /etc/systemd/system/${COMPONENT}.service &>>${LOG_FILE}
-  StatusCheck $?
-
-  systemctl daemon-reload &>>${LOG_FILE}
-  systemctl enable ${COMPONENT} &>>${LOG_FILE}
-
-  echo "Start ${COMPONENT} Service"
-  systemctl start ${COMPONENT} &>>${LOG_FILE}
-  StatusCheck $?
-}
 
 NODEJS() {
   echo "Setup NodeJS Repos"
@@ -108,4 +69,44 @@ PYTHON() {
 
   SYSTEMD_SETUP
 
+}
+# comman files in NODEJS ,JAVA,PYTHON
+APP_PREREQ() {
+  id roboshop &>>${LOG_FILE}
+  if [ $? -ne 0 ]; then
+    echo "Add RoboShop Application User"
+    useradd roboshop &>>${LOG_FILE}
+    StatusCheck $?
+  fi
+
+  echo "Download ${COMPONENT} Application Code"
+  curl -s -L -o /tmp/${COMPONENT}.zip "https://github.com/roboshop-devops-project/${COMPONENT}/archive/main.zip" &>>${LOG_FILE}
+  StatusCheck $?
+
+  echo "Clean Old App Content"
+  cd /home/roboshop && rm -rf ${COMPONENT} &>>${LOG_FILE}
+  StatusCheck $?
+
+  echo "Extract ${COMPONENT} Application Code"
+  unzip /tmp/${COMPONENT}.zip &>>${LOG_FILE}
+  StatusCheck $?
+
+  mv ${COMPONENT}-main ${COMPONENT} && cd /home/roboshop/${COMPONENT}
+}
+
+SYSTEMD_SETUP() {
+  echo "Update SystemD Service File"
+  sed -i -e 's/REDIS_ENDPOINT/redis.roboshop.internal/' -e 's/MONGO_ENDPOINT/mongodb.roboshop.internal/' -e 's/CATALOGUE_ENDPOINT/catalogue.roboshop.internal/' -e 's/MONGO_DNSNAME/mongodb.roboshop.internal/' -e 's/CARTENDPOINT/cart.roboshop.internal/' -e 's/DBHOST/mysql.roboshop.internal/' -e 's/CARTHOST/cart.roboshop.internal/' -e 's/USERHOST/user.roboshop.internal/' -e  's/AMQPHOST/rabbitmq.roboshop.internal/' /home/roboshop/${COMPONENT}/systemd.service
+  StatusCheck $?
+
+  echo "Setup ${COMPONENT} Service"
+  mv /home/roboshop/${COMPONENT}/systemd.service /etc/systemd/system/${COMPONENT}.service &>>${LOG_FILE}
+  StatusCheck $?
+
+  systemctl daemon-reload &>>${LOG_FILE}
+  systemctl enable ${COMPONENT} &>>${LOG_FILE}
+
+  echo "Start ${COMPONENT} Service"
+  systemctl start ${COMPONENT} &>>${LOG_FILE}
+  StatusCheck $?
 }
